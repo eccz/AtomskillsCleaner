@@ -13,7 +13,7 @@
 Собирается в один файл с помощью pyinstaller:
 
 `pip install pyinstaller`\
-`pyinstaller --onefile --windowed --icon=logo2.ico ui.py`
+`pyinstaller --onefile --windowed --icon=logo2.ico app.py`
 
 ## Описание работы 
 * Excel - проходит по всем непустым ячейкам и заменяет их на очищенные .strip() значения при необходимости.

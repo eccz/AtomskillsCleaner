@@ -51,7 +51,7 @@ def ifc_cleaner(inp_filepath, out_filepath):
         writer.writerow(['Property Name', 'Old Value', 'New Value'])  # Заголовки
         writer.writerows(report_rows)
 
-    return f'Удалены лишние символы в {counter} значениях атрибутов. Отчет сформирован по тому же пути.', report_filepath
+    return f'Удалены лишние символы в {counter} значениях атрибутов.', report_filepath
 
 
 if __name__ == '__main__':
