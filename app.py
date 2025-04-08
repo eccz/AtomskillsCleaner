@@ -3,11 +3,13 @@ from tkinter import messagebox, filedialog, ttk
 from cadlib_cleaner import cadlib_cleaner
 from excel_cleaner import excel_cleaner
 from ifc_cleaner import ifc_cleaner
+from datetime import datetime
 import os
 import tempfile
 import shutil
 import pyodbc
 import threading
+import csv
 
 
 def handle_file_clean(filetype, file_extension):
@@ -38,9 +40,10 @@ def handle_file_clean(filetype, file_extension):
     def process_file():
         try:
             if filetype == 'IFC':
-                res = ifc_cleaner(input_path, temp_output_path)
+                res, report_path = ifc_cleaner(input_path, temp_output_path)
             elif filetype == 'Excel':
                 res = excel_cleaner(input_path, temp_output_path)
+                report_path = ''
 
             # Сохраняем файл
             def after_success():
@@ -62,6 +65,21 @@ def handle_file_clean(filetype, file_extension):
                         messagebox.showerror("Ошибка", f"Не удалось сохранить файл:\n{ex}")
                 else:
                     messagebox.showinfo("Отмена", "Сохранение отменено.")
+
+                if report_path and os.path.exists(report_path):
+                    save_report = messagebox.askyesno("Сохранить отчет?", "Хотите сохранить CSV-отчет об изменениях?")
+                    if save_report:
+                        report_output = filedialog.asksaveasfilename(
+                            title="Сохранить отчет как...",
+                            defaultextension=".csv",
+                            initialfile=os.path.basename(report_path),
+                            filetypes=[("CSV файлы", "*.csv")]
+                        )
+                        if report_output:
+                            try:
+                                shutil.copy(report_path, report_output)
+                            except Exception as e:
+                                messagebox.showerror("Ошибка", f"Не удалось сохранить отчет:\n{e}")
 
                 shutil.rmtree(temp_dir)
 
@@ -142,16 +160,36 @@ def handle_cadlib_clean():
 
     def clean_cadlib_db():
         conn = connect_to_db()
+        report_rows = []
         try:
             cursor = conn.cursor()
-            res = cadlib_cleaner(cursor)
+            res, report_rows = cadlib_cleaner(cursor)
             cursor.commit()
             cursor.close()
             conn.close()
             cadlib_window.destroy()
             messagebox.showinfo("Успех", f"{res}\n\nЛишние символы в атрибутах базы данных Cadlib очищены!")
+
         except Exception as err:
             messagebox.showerror("Ошибка", f"Ошибка получения баз данных: {err}")
+
+        try:
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            report_path = filedialog.asksaveasfilename(
+                title="Сохранить отчет",
+                defaultextension=".csv",
+                initialfile=f"cadlib_clean_report_{timestamp}.csv",
+                filetypes=[("CSV файлы", "*.csv")]
+            )
+
+            if report_path and report_rows:
+                with open(report_path, 'w', encoding='utf-8-sig', newline='') as csvfile:
+                    writer = csv.writer(csvfile, delimiter=';')
+                    writer.writerow(['Parameter', 'Object', 'Old Value', 'New Value'])  # Заголовки
+                    writer.writerows(report_rows)
+
+        except Exception as err:
+            messagebox.showerror("Ошибка", f"Ошибка создания отчета: {err}")
 
     # Кнопка для загрузки списка баз данных
     fetch_db_button = tk.Button(cadlib_window, text="Получить базы", command=fetch_databases)
