@@ -13,7 +13,7 @@
 Собирается в один файл с помощью pyinstaller:
 
 `pip install pyinstaller`\
-`pyinstaller --onefile --windowed --icon=logo2.ico app.py`
+`pyinstaller --onefile --windowed --name=AtomskillsCleaner_v1.2.exe --icon=logo2.ico app.py`
 
 ## Описание работы 
 * Excel - проходит по всем непустым ячейкам и заменяет их на очищенные .strip() значения при необходимости.

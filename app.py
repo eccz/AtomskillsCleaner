@@ -78,8 +78,8 @@ def handle_file_clean(filetype, file_extension):
                         if report_output:
                             try:
                                 shutil.copy(report_path, report_output)
-                            except Exception as e:
-                                messagebox.showerror("Ошибка", f"Не удалось сохранить отчет:\n{e}")
+                            except Exception as ex:
+                                messagebox.showerror("Ошибка", f"Не удалось сохранить отчет:\n{ex}")
 
                 shutil.rmtree(temp_dir)
 
